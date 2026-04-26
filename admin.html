@@ -223,9 +223,9 @@ window.loadData = async function(){
   const dateVal=document.getElementById('filter-date').value || today();
   document.getElementById('main-content').innerHTML='<div class="loading"><div class="spinner"></div> Carregando agendamentos...</div>';
   try{
-    const q=query(collection(db,'agendamentos'), where('date','==',dateVal), orderBy('time'));
+    const q=query(collection(db,'agendamentos'), where('date','==',dateVal));
     const snap=await getDocs(q);
-    allData=snap.docs.map(d=>({id:d.id,...d.data()}));
+    allData=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.time>b.time?1:-1);
     render();
   }catch(e){
     document.getElementById('main-content').innerHTML='<div class="empty-state">Erro ao carregar. Verifique sua conexão.</div>';
