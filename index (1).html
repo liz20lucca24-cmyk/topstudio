@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Top Studio — Agendamento</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0f0f0f;--white:#fafaf8;--gold:#c9a84c;--gold-light:#e8c97a;
+  --gray:#2a2a2a;--gray2:#3d3d3d;--gray3:#888;--surface:#1a1a1a;
+  --radius:10px;--transition:.18s ease
+}
+html,body{height:100%;background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif}
+body{min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--black);border-bottom:1px solid #222;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--white);line-height:1}
+.logo span{color:var(--gold)}
+.header-sub{font-size:11px;color:var(--gray3);letter-spacing:1px;text-transform:uppercase}
+
+/* STEPS */
+.steps{display:flex;padding:.75rem 1.25rem;gap:0;background:var(--surface);border-bottom:1px solid #222;overflow-x:auto}
+.step{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.step-dot{width:22px;height:22px;border-radius:50%;border:1.5px solid #444;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#666;transition:all var(--transition)}
+.step-label{font-size:11px;color:#555;letter-spacing:.5px;text-transform:uppercase;transition:color var(--transition)}
+.step.active .step-dot{border-color:var(--gold);color:var(--gold)}
+.step.active .step-label{color:var(--white)}
+.step.done .step-dot{background:var(--gold);border-color:var(--gold);color:var(--black)}
+.step.done .step-label{color:var(--gray3)}
+.step-sep{color:#333;font-size:12px;margin:0 8px}
+
+/* CONTENT */
+.content{flex:1;padding:1.25rem;max-width:480px;margin:0 auto;width:100%}
+
+/* SECTION */
+.sec-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3);margin-bottom:1rem;font-weight:500}
+
+/* SERVICE CARDS */
+.service-grid{display:flex;flex-direction:column;gap:.5rem}
+.service-card{background:var(--surface);border:1px solid #282828;border-radius:var(--radius);padding:.875rem 1rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden}
+.service-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);transform:scaleY(0);transition:transform var(--transition);border-radius:0 2px 2px 0}
+.service-card:hover{border-color:#444;background:#1f1f1f}
+.service-card.selected{border-color:var(--gold);background:#1f1c14}
+.service-card.selected::before{transform:scaleY(1)}
+.svc-icon{width:40px;height:40px;border-radius:8px;background:#222;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.svc-name{font-size:15px;font-weight:500;color:var(--white)}
+.svc-meta{font-size:12px;color:var(--gray3);margin-top:2px}
+.svc-price{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:1px;flex-shrink:0}
+
+/* BARBER */
+.barber-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem}
+.barber-card{background:var(--surface);border:1px solid #282828;border-radius:var(--radius);padding:1rem .625rem;text-align:center;cursor:pointer;transition:all var(--transition)}
+.barber-card:hover{border-color:#444}
+.barber-card.selected{border-color:var(--gold);background:#1f1c14}
+.barber-avatar{width:48px;height:48px;border-radius:50%;background:var(--gray);margin:0 auto .625rem;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);border:2px solid transparent;transition:border-color var(--transition)}
+.barber-card.selected .barber-avatar{border-color:var(--gold)}
+.barber-name{font-size:13px;font-weight:500}
+
+/* CALENDAR */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.cal-nav-btn{background:var(--surface);border:1px solid #282828;color:var(--white);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:border-color var(--transition)}
+.cal-nav-btn:hover{border-color:#555}
+.cal-month-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal-wday{font-size:10px;color:var(--gray3);padding:4px 0;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.cal-day{height:38px;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all var(--transition)}
+.cal-day:hover:not(.disabled):not(.empty){background:#222;border-color:#444}
+.cal-day.today{border-color:#444;color:var(--gold)}
+.cal-day.selected{background:var(--gold);color:var(--black);font-weight:500}
+.cal-day.disabled{color:#333;cursor:default}
+.cal-day.empty{cursor:default}
+
+/* TIMES */
+.times-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3);margin:1.25rem 0 .75rem;font-weight:500}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+.time-btn{background:var(--surface);border:1px solid #282828;color:var(--white);padding:.5rem .25rem;border-radius:8px;font-size:13px;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all var(--transition)}
+.time-btn:hover{border-color:#555}
+.time-btn.selected{background:var(--gold);border-color:var(--gold);color:var(--black);font-weight:500}
+.time-btn.taken{background:#111;color:#333;cursor:default;border-color:#1a1a1a;text-decoration:line-through}
+.no-times{text-align:center;padding:2rem;font-size:13px;color:var(--gray3)}
+
+/* FORM */
+.form-group{margin-bottom:1rem}
+.form-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray3);display:block;margin-bottom:.4rem;font-weight:500}
+.form-input{width:100%;padding:.75rem 1rem;background:var(--surface);border:1px solid #282828;border-radius:var(--radius);color:var(--white);font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color var(--transition)}
+.form-input:focus{border-color:var(--gold)}
+.form-input::placeholder{color:#444}
+
+/* SUMMARY CARD */
+.summary{background:var(--surface);border:1px solid #282828;border-radius:var(--radius);padding:1rem 1.125rem;margin:1rem 0}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:.375rem 0;border-bottom:1px solid #222;font-size:13px}
+.sum-row:last-child{border-bottom:none}
+.sum-label{color:var(--gray3)}
+.sum-val{font-weight:500;text-align:right}
+.sum-val.price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:1px}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:.875rem;background:var(--gold);color:var(--black);border:none;border-radius:var(--radius);font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px;transition:background var(--transition)}
+.btn-primary:hover{background:var(--gold-light)}
+.btn-primary:disabled{background:#333;color:#666;cursor:default}
+.btn-back{width:100%;padding:.625rem;background:transparent;border:1px solid #282828;border-radius:var(--radius);color:var(--gray3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:.5rem;transition:all var(--transition)}
+.btn-back:hover{border-color:#555;color:var(--white)}
+
+/* SUCCESS */
+.success-wrap{text-align:center;padding:2rem 1rem}
+.success-badge{width:72px;height:72px;border-radius:50%;border:2px solid var(--gold);margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center}
+.success-badge svg{width:32px;height:32px;stroke:var(--gold)}
+.success-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:.5rem}
+.success-sub{font-size:14px;color:var(--gray3);line-height:1.7;margin-bottom:2rem}
+.btn-wpp{width:100%;padding:.875rem;background:#25D366;color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:.625rem;transition:opacity var(--transition)}
+.btn-wpp:hover{opacity:.9}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:2rem;gap:.5rem;color:var(--gray3);font-size:13px}
+.spinner{width:16px;height:16px;border:2px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--gold);color:var(--white);padding:.75rem 1.25rem;border-radius:var(--radius);font-size:13px;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* FADE IN */
+.screen{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">TOP<span>.</span>STUDIO</div>
+    <div class="header-sub">Rua Equador, 1</div>
+  </div>
+</div>
+
+<div class="steps" id="steps-bar">
+  <div class="step active" id="s1"><div class="step-dot">1</div><span class="step-label">Serviço</span></div>
+  <div class="step-sep">›</div>
+  <div class="step" id="s2"><div class="step-dot">2</div><span class="step-label">Barbeiro</span></div>
+  <div class="step-sep">›</div>
+  <div class="step" id="s3"><div class="step-dot">3</div><span class="step-label">Data</span></div>
+  <div class="step-sep">›</div>
+  <div class="step" id="s4"><div class="step-dot">4</div><span class="step-label">Dados</span></div>
+</div>
+
+<div class="content">
+  <!-- STEP 1: SERVICES -->
+  <div id="screen-1" class="screen">
+    <div class="sec-title">Escolha o serviço</div>
+    <div class="service-grid" id="services-list"></div>
+  </div>
+
+  <!-- STEP 2: BARBER -->
+  <div id="screen-2" class="screen" style="display:none">
+    <div class="sec-title">Escolha o barbeiro</div>
+    <div class="barber-grid" id="barbers-list"></div>
+    <button class="btn-back" onclick="goTo(1)">← Voltar</button>
+  </div>
+
+  <!-- STEP 3: DATE & TIME -->
+  <div id="screen-3" class="screen" style="display:none">
+    <div class="sec-title">Escolha a data</div>
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <span class="cal-month-title" id="cal-title"></span>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div id="time-section"></div>
+    <div style="margin-top:1rem">
+      <button class="btn-back" onclick="goTo(2)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: FORM -->
+  <div id="screen-4" class="screen" style="display:none">
+    <div class="sec-title">Seus dados</div>
+    <div class="form-group">
+      <label class="form-label">Nome completo</label>
+      <input class="form-input" type="text" id="inp-name" placeholder="Ex: João Silva"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">WhatsApp</label>
+      <input class="form-input" type="tel" id="inp-whats" placeholder="(21) 99999-9999" oninput="maskPhone(this)"/>
+    </div>
+    <div class="summary">
+      <div class="sec-title" style="margin-bottom:.5rem">Resumo do agendamento</div>
+      <div class="sum-row"><span class="sum-label">Serviço</span><span class="sum-val" id="r-service"></span></div>
+      <div class="sum-row"><span class="sum-label">Barbeiro</span><span class="sum-val" id="r-barber"></span></div>
+      <div class="sum-row"><span class="sum-label">Data</span><span class="sum-val" id="r-date"></span></div>
+      <div class="sum-row"><span class="sum-label">Horário</span><span class="sum-val" id="r-time"></span></div>
+      <div class="sum-row"><span class="sum-label">Valor</span><span class="sum-val price" id="r-price"></span></div>
+    </div>
+    <button class="btn-primary" id="btn-confirm" onclick="confirmBooking()">Confirmar agendamento</button>
+    <button class="btn-back" onclick="goTo(3)">← Voltar</button>
+  </div>
+
+  <!-- STEP 5: SUCCESS -->
+  <div id="screen-5" class="screen" style="display:none">
+    <div class="success-wrap">
+      <div class="success-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">Agendado!</div>
+      <div class="success-sub" id="success-text"></div>
+      <button class="btn-wpp" onclick="sendWpp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar confirmação no WhatsApp
+      </button>
+      <button class="btn-back" onclick="restart()">Fazer novo agendamento</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// =============================================
+// 🔧 CONFIGURE SUAS CREDENCIAIS FIREBASE AQUI
+// =============================================
+const firebaseConfig = {
+  apiKey: "AIzaSyB4ji8XbUHMLlrHsESdJJEZLFuOmYm38xQ",
+  authDomain: "barbearia-top-studio.firebaseapp.com",
+  projectId: "barbearia-top-studio",
+  storageBucket: "barbearia-top-studio.appspot.com",
+  messagingSenderId: "844120466660",
+  appId: "1:844120466660:web:341833ef0e346a2fa7f8f1"
+};
+// =============================================
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ---- DATA ----
+const SERVICES = [
+  {id:1, name:'Corte Simples', price:30, dur:30, icon:'✂'},
+  {id:2, name:'Disfarce',       price:45, dur:35, icon:'⚡'},
+  {id:3, name:'Corte + Barba', price:65, dur:50, icon:'★'},
+  {id:4, name:'Barba Completa',price:35, dur:30, icon:'◆'}
+];
+const BARBERS = ['André','Carlos','Paulo'];
+const MONTHS  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const WDAYS   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+let sel = {service:null, barber:null, date:null, time:null};
+let calDate = new Date();
+
+// ---- HELPERS ----
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtPrice(p){ return 'R$ '+p.toFixed(2).replace('.',','); }
+function getHours(dow){
+  if(dow===0) return {s:9,  e:14};
+  if(dow===1) return {s:9,  e:17};
+  return              {s:9,  e:20};
+}
+function buildSlots(date, dur){
+  const {s,e} = getHours(date.getDay());
+  const slots=[];
+  let t = s*60;
+  while(t+dur <= e*60){ slots.push(pad(Math.floor(t/60))+':'+pad(t%60)); t+=30; }
+  return slots;
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+window.maskPhone = function(el){
+  let v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>6) v=`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+  else if(v.length>2) v=`(${v.slice(0,2)}) ${v.slice(2)}`;
+  el.value=v;
+};
+
+// ---- FIREBASE ----
+async function getTakenSlots(barber, dateStr){
+  try {
+    const q = query(
+      collection(db,'agendamentos'),
+      where('barber','==',barber),
+      where('date','==',dateStr),
+      where('status','!=','cancelado')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>d.data().time);
+  } catch(e){ console.error(e); return []; }
+}
+
+async function saveBooking(data){
+  const ref = await addDoc(collection(db,'agendamentos'), {
+    ...data,
+    status: 'confirmado',
+    createdAt: Timestamp.now()
+  });
+  return ref.id;
+}
+
+// ---- RENDER ----
+function renderServices(){
+  document.getElementById('services-list').innerHTML = SERVICES.map(s=>`
+    <div class="service-card${sel.service&&sel.service.id===s.id?' selected':''}" onclick="pickService(${s.id})">
+      <div class="svc-icon">${s.icon}</div>
+      <div>
+        <div class="svc-name">${s.name}</div>
+        <div class="svc-meta">${s.dur} min</div>
+      </div>
+      <div class="svc-price">${fmtPrice(s.price)}</div>
+    </div>`).join('');
+}
+
+function renderBarbers(){
+  document.getElementById('barbers-list').innerHTML = BARBERS.map(b=>`
+    <div class="barber-card${sel.barber===b?' selected':''}" onclick="pickBarber('${b}')">
+      <div class="barber-avatar">${b[0]}</div>
+      <div class="barber-name">${b}</div>
+    </div>`).join('');
+}
+
+function renderCal(){
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  document.getElementById('cal-title').textContent = MONTHS[m]+' '+y;
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  let html='';
+  WDAYS.forEach(d=>{ html+=`<div class="cal-wday">${d}</div>`; });
+  for(let i=0;i<first;i++) html+='<div class="cal-day empty"></div>';
+  for(let d=1;d<=days;d++){
+    const dt=new Date(y,m,d); dt.setHours(0,0,0,0);
+    const ds=`${y}-${pad(m+1)}-${pad(d)}`;
+    const past=dt<today, sel2=sel.date===ds, tod=dt.getTime()===today.getTime()&&!sel2;
+    html+=`<div class="cal-day${past?' disabled':''}${sel2?' selected':''}${tod?' today':''}" onclick="${past?'':'pickDate(\''+ds+'\')'}">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  if(sel.date) loadTimes();
+  else document.getElementById('time-section').innerHTML='';
+}
+
+async function loadTimes(){
+  const el=document.getElementById('time-section');
+  el.innerHTML='<div class="loading"><div class="spinner"></div> Buscando horários...</div>';
+  const [y,m,d]=sel.date.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  const slots=buildSlots(dt, sel.service?sel.service.dur:30);
+  const taken=await getTakenSlots(sel.barber, sel.date);
+  if(!slots.length){ el.innerHTML='<div class="no-times">Sem horários neste dia.</div>'; return; }
+  el.innerHTML='<div class="times-title">Horários disponíveis</div><div class="time-grid">'+
+    slots.map(t=>{
+      const ok=!taken.includes(t);
+      return `<button class="time-btn${!ok?' taken':''}${sel.time===t&&ok?' selected':''}" ${!ok?'disabled':''} onclick="pickTime('${t}')">${t}</button>`;
+    }).join('')+'</div>';
+}
+
+function fillSummary(){
+  const [y,m,d]=sel.date.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  document.getElementById('r-service').textContent=sel.service.name;
+  document.getElementById('r-barber').textContent=sel.barber;
+  document.getElementById('r-date').textContent=`${WDAYS[dt.getDay()]}, ${d} de ${MONTHS[m-1]}`;
+  document.getElementById('r-time').textContent=sel.time+'h';
+  document.getElementById('r-price').textContent=fmtPrice(sel.service.price);
+}
+
+// ---- ACTIONS ----
+window.pickService = function(id){
+  sel.service=SERVICES.find(s=>s.id===id);
+  renderServices();
+  setTimeout(()=>goTo(2),160);
+};
+window.pickBarber = function(b){
+  sel.barber=b;
+  renderBarbers();
+  setTimeout(()=>goTo(3),160);
+};
+window.pickDate = function(ds){
+  sel.date=ds; sel.time=null;
+  renderCal();
+};
+window.pickTime = function(t){
+  sel.time=t;
+  loadTimes();
+  setTimeout(()=>goTo(4),160);
+};
+window.changeMonth = function(d){
+  calDate=new Date(calDate.getFullYear(),calDate.getMonth()+d,1);
+  renderCal();
+};
+
+window.confirmBooking = async function(){
+  const name=document.getElementById('inp-name').value.trim();
+  const whats=document.getElementById('inp-whats').value.trim();
+  if(!name){ showToast('Informe seu nome'); return; }
+  if(whats.replace(/\D/g,'').length<10){ showToast('Informe um WhatsApp válido'); return; }
+  const btn=document.getElementById('btn-confirm');
+  btn.disabled=true; btn.textContent='Salvando...';
+  try {
+    await saveBooking({
+      name, whats,
+      service: sel.service.name,
+      servicePrice: sel.service.price,
+      serviceDur: sel.service.dur,
+      barber: sel.barber,
+      date: sel.date,
+      time: sel.time
+    });
+    const [y,m,d]=sel.date.split('-').map(Number);
+    const dt=new Date(y,m-1,d);
+    document.getElementById('success-text').innerHTML=
+      `<strong>${name}</strong>, seu horário está confirmado!<br><br>`+
+      `${sel.service.name} com ${sel.barber}<br>`+
+      `${WDAYS[dt.getDay()]}, ${d} de ${MONTHS[m-1]} às ${sel.time}h<br><br>`+
+      `📍 Rua Equador, 1 — Top Studio`;
+    goTo(5);
+  } catch(e){
+    showToast('Erro ao salvar. Tente novamente.');
+    btn.disabled=false; btn.textContent='Confirmar agendamento';
+  }
+};
+
+window.sendWpp = function(){
+  const name=document.getElementById('inp-name').value.trim();
+  const [y,m,d]=sel.date.split('-').map(Number);
+  const msg=encodeURIComponent(
+    `Olá! Agendamento confirmado na Top Studio ✅\n`+
+    `• Cliente: ${name}\n`+
+    `• Serviço: ${sel.service.name}\n`+
+    `• Barbeiro: ${sel.barber}\n`+
+    `• Data: ${d} de ${MONTHS[m-1]} às ${sel.time}h\n`+
+    `• Valor: ${fmtPrice(sel.service.price)}\n`+
+    `📍 Rua Equador, 1`
+  );
+  window.open('https://wa.me/55?text='+msg,'_blank');
+};
+
+window.goTo = function(n){
+  [1,2,3,4,5].forEach(i=>{ document.getElementById('screen-'+i).style.display=i===n?'':'none'; });
+  ['s1','s2','s3','s4'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.toggle('active',i+1===n);
+    el.classList.toggle('done',i+1<n);
+    el.querySelector('.step-dot').textContent=i+1<n?'✓':(i+1);
+  });
+  if(n===2) renderBarbers();
+  if(n===3){ calDate=new Date(); renderCal(); }
+  if(n===4) fillSummary();
+};
+
+window.restart = function(){
+  sel={service:null,barber:null,date:null,time:null};
+  goTo(1); renderServices();
+};
+
+// INIT
+renderServices();
+</script>
+</body>
+</html>
