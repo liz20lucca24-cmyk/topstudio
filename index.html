@@ -535,25 +535,26 @@ window.submitCancel = async function(){
   try {
     const q = query(
       collection(db,'agendamentos'),
-      where('date','==',date),
-      where('time','==',timeFormatted),
-      where('status','==','confirmado')
+      where('date','==',date)
     );
     const snap = await getDocs(q);
     const match = snap.docs.find(d=>{
       const data=d.data();
-      return data.name.toLowerCase()===name.toLowerCase() ||
-             data.whats.replace(/\D/g,'')===whats.replace(/\D/g,'');
+      const sameTime=data.time===timeFormatted;
+      const sameName=data.name.toLowerCase()===name.toLowerCase();
+      const sameWhats=data.whats.replace(/\D/g,'')===whats.replace(/\D/g,'');
+      const ativo=data.status==='confirmado';
+      return ativo && sameTime && (sameName || sameWhats);
     });
     if(!match){ showToast('Agendamento não encontrado. Verifique os dados.'); return; }
     await updateDoc(doc(db,'agendamentos',match.id),{status:'cancelado'});
     const [y,m,d2]=date.split('-').map(Number);
-    const dt=new Date(y,m-1,d2);
     document.getElementById('cancel-result-text').innerHTML=
       `Seu agendamento do dia <strong>${d2} de ${MONTHS[m-1]}</strong> às <strong>${timeFormatted}h</strong> foi cancelado com sucesso.<br><br>`+
       `Se quiser remarcar, é só fazer um novo agendamento! 😊`;
     goTo(8);
   } catch(e){
+    console.error(e);
     showToast('Erro ao cancelar. Tente novamente.');
   }
 };
